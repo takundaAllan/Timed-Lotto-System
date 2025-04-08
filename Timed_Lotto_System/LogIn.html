@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Register</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .registration-link {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .registration-form {
+          display:none; /* Initially Hide registration form*/
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="button" onclick="login()">Login</button>
+        <div class="error-message" id="loginError"></div>
+
+        <div class="registration-link">
+            <a href="#" onclick="showRegistrationForm()">Create an account</a>
+        </div>
+    </form>
+
+
+    <div class="registration-form" id="registrationForm">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <label for="regUsername">Username:</label>
+            <input type="text" id="regUsername" name="regUsername" required>
+
+            <label for="regPassword">Password:</label>
+            <input type="password" id="regPassword" name="regPassword" required>
+            <label for="regConfirmPassword">Confirm Password:</label>
+            <input type="password" id="regConfirmPassword" name="regConfirmPassword" required>
+
+            <button type="button" onclick="register()">Register</button>
+            <div class="error-message" id="registerError"></div>
+
+            <div class="registration-link">
+                <a href="#" onclick="showLoginForm()">Back to Login</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const errorDiv = document.getElementById("loginError");
+
+        // In a real application, you would validate against a database or server
+        const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
+        const user = storedUsers.find(u => u.username === username && u.password === password)
+
+        if (user) {
+            // Redirect or perform other actions upon successful login
+            alert("Login Successful!"); // Placeholder
+            window.location.href = "LOTTO.html"; // Example redirect
+        } else {
+            errorDiv.textContent = "Invalid username or password.";
+        }
+    }
+
+    function register() {
+        const regUsername = document.getElementById("regUsername").value;
+        const regPassword = document.getElementById("regPassword").value;
+        const regConfirmPassword = document.getElementById("regConfirmPassword").value;
+        const errorDiv = document.getElementById("registerError");
+
+        if (regPassword !== regConfirmPassword) {
+            errorDiv.textContent = "Passwords do not match.";
+            return;
+        }
+
+        const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
+        const existingUser = storedUsers.find(u => u.username === regUsername);
+
+        if(existingUser){
+          errorDiv.textContent = "Username already exists."
+          return;
+        }
+
+        const newUser = { username: regUsername, password: regPassword };
+        storedUsers.push(newUser);
+        localStorage.setItem('users', JSON.stringify(storedUsers));
+
+        alert("Registration successful! Please login.");
+        showLoginForm(); // Redirect to the login form
+    }
+
+    function showRegistrationForm(){
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registrationForm').style.display = 'block';
+    }
+
+    function showLoginForm(){
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registrationForm').style.display = 'none';
+    }
+
+</script>
+
+</body>
+</html>

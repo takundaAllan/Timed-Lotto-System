@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Timed Lotto Game</title>
+<style>
+    button{
+        text-decoration: none;
+    color: #fff;
+    background: rgb(36,32,30);
+    margin: 26px 0;
+    padding: 10px 18px;
+    border-radius: 10px;
+    display: inline-block;
+    transition: .4s ease;
+    }
+body { font-family: sans-serif; }
+#game-area { display: flex; }
+#input-area { flex: 1; margin-right: 20px; }
+#result-area { flex: 1; }
+#timer { font-size: 2em; }
+#ticket { border: 1px dashed #ccc; padding: 10px; margin-top: 10px; background: white;}
+    
+   .background-clip{
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+       background: linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),url(lotto.webp)
+}
+    @media(min-aspect-ratio:16/9){
+    .background-clip{
+        width: 100%;
+        height: auto;
+    }
+}
+
+@media(max-aspect-ratio:16/9){
+    .background-clip{
+        width: auto;
+        height: 100;
+         display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+    
+
+    
+</style>
+</head>
+    
+<body>
+ <video autoplay loop muted plays-inline class="background-clip">
+                    <source src="W2s.mp4" type="video/mp4">
+                </video>
+<h1 style="color: midnightblue; font-family: Open Sans; font-size: 3em; text-align: center;"> <span style="color: aliceblue">PLAY </span><span style="color: red">L</span><span style="color: yellow">O</span><span style="color: darkgreen">T</span><span style="color: deeppink">T</span>O </h1>
+
+<div id="game-area">
+    <div id="input-area">
+        <h2 style="color: black">Enter Your Lucky Numbers (6 numbers, 1-49):</h2>
+        <input type="number" id="num1" min="1" max="49" required>
+        <input type="number" id="num2" min="1" max="49" required>
+        <input type="number" id="num3" min="1" max="49" required>
+        <input type="number" id="num4" min="1" max="49" required>
+        <input type="number" id="num5" min="1" max="49" required>
+        <input type="number" id="num6" min="1" max="49" required><br><br>
+        Stake Amount: <input type="number" id="stake" min="1" required><br><br>
+        <button onclick="randomizeNumbers()">Randomize</button><br><br>  
+        <button onclick="buyTicket()">Buy Ticket</button>
+        <button onclick="printTicket()">Print Ticket</button> <div id="result"></div>
+        <h2>Next Draw In: <span id="timer"></span></h2>
+    </div>
+    
+    <div id="result-area">
+        <h2 style="color: black;background: white">Your Ticket:</h2>
+        <div id="ticket"></div>
+        <h2 style="color: black;background: white">Draw Results:</h2>
+        <div id="draw-results"></div>
+        <h2 style="color:black;background: white">Game History:</h2>
+        <div id="game-history"></div>
+    </div>
+</div>
+
+<script>
+let timeLeft = 180; // 3 minutes in seconds
+let timerInterval;
+let userNumbers = [];
+let stakeAmount = 0;
+let gameHistory = [];
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = formatTime(timeLeft);
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            runDraw();
+            timeLeft = 180; // Reset timer for next draw
+            startTimer(); // Start timer again
+        }
+    }, 1000);
+}
+    function randomizeNumbers() {
+    const randomNumbers = [];
+    while (randomNumbers.length < 6) {
+        const num = Math.floor(Math.random() * 49) + 1;
+        if (!randomNumbers.includes(num)) {
+            randomNumbers.push(num);
+        }
+    }
+
+    document.getElementById("num1").value = randomNumbers[0];
+    document.getElementById("num2").value = randomNumbers[1];
+    document.getElementById("num3").value = randomNumbers[2];
+    document.getElementById("num4").value = randomNumbers[3];
+    document.getElementById("num5").value = randomNumbers[4];
+    document.getElementById("num6").value = randomNumbers[5];
+
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function buyTicket() {
+    userNumbers = [
+        parseInt(document.getElementById("num1").value),
+        parseInt(document.getElementById("num2").value),
+        parseInt(document.getElementById("num3").value),
+        parseInt(document.getElementById("num4").value),
+        parseInt(document.getElementById("num5").value),
+        parseInt(document.getElementById("num6").value)
+    ];
+    stakeAmount = parseInt(document.getElementById("stake").value);
+
+    if (userNumbers.some(isNaN) || userNumbers.length !== 6 || userNumbers.some(num => num < 1 || num > 49)) {
+        alert("Please enter 6 valid numbers between 1 and 49.");
+        return;
+    }
+    if(stakeAmount < 1 || isNaN(stakeAmount)) {
+        alert("Please enter a valid stake amount");
+        return;
+    }
+
+    displayTicket();
+}
+
+function displayTicket() {
+    const ticketDiv = document.getElementById("ticket");
+    ticketDiv.innerHTML = ""; // Clear previous ticket
+    
+   
+    const numbersList = document.createElement("ul");
+    userNumbers.forEach(num => {
+        const li = document.createElement("li");
+        li.textContent = num;
+        numbersList.appendChild(li);
+    });
+
+    ticketDiv.appendChild(numbersList);
+     ticketDiv.innerHTML += `<p><strong>Date & Time:</strong> ${new Date().toLocaleString()}</p>`;
+    ticketDiv.innerHTML += `<p><strong>Random Code:</strong> ${generateRandomCode()}</p>`;
+
+    ticketDiv.innerHTML += `<p>Stake: $${stakeAmount}</p>`;
+    
+     
+}
+    function generateRandomCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return code;
+}
+
+function runDraw() {
+    const winningNumbers = generateWinningNumbers();
+    displayDrawResults(winningNumbers);
+    checkWin(winningNumbers);
+}
+
+function generateWinningNumbers() {
+    const numbers = [];
+    while (numbers.length < 6) {
+        const num = Math.floor(Math.random() * 49) + 1;
+        if (!numbers.includes(num)) {
+            numbers.push(num);
+        }
+    }
+    return numbers.sort((a, b) => a - b);
+}
+
+function displayDrawResults(numbers) {
+    const resultsDiv = document.getElementById("draw-results");
+    resultsDiv.innerHTML = "";
+
+    const numbersList = document.createElement("ul");
+    numbers.forEach(num => {
+        const li = document.createElement("li");
+        li.textContent = num;
+        numbersList.appendChild(li);
+    });
+    resultsDiv.appendChild(numbersList);
+}
+
+function checkWin(winningNumbers) {
+    let matches = 0;
+    userNumbers.forEach(num => {
+        if (winningNumbers.includes(num)) {
+            matches++;
+        }
+    });
+
+    const winMessage = matches >= 3 ? `You won! (Matches: ${matches})` : "You lost. Better luck next time!";
+    gameHistory.push({ numbers: userNumbers, stake: stakeAmount, winningNumbers: winningNumbers, win: matches >= 3 });
+    updateGameHistory();
+    alert(winMessage); // or display in the results area
+}
+
+function updateGameHistory() {
+    const historyDiv = document.getElementById("game-history");
+    historyDiv.innerHTML = "";
+
+    gameHistory.forEach(game => {
+        const gameEntry = document.createElement("div");
+        gameEntry.innerHTML = `
+        <p>Your Numbers: ${game.numbers.join(", ")}</p>
+        <p>Stake: $${game.stake}</p>
+        <p>Winning Numbers: ${game.winningNumbers.join(", ")}</p>
+        <p>Result: ${game.win ? "Win" : "Loss"}</p>
+        <hr>
+        `;
+        historyDiv.appendChild(gameEntry);
+    });
+}
+
+     function printTicket() {
+            const printContents = document.getElementById("ticket").innerHTML;
+            const originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents; // Replace body content with ticket
+
+            window.print(); // Trigger the print dialog
+
+            document.body.innerHTML = originalContents; // Restore original content
+        }
+
+startTimer(); // Start the initial timer
+</script>
+
+</body>
+</html>
